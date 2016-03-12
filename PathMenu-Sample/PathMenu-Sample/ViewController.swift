@@ -32,7 +32,7 @@ class ViewController: UIViewController {
         
         let starMenuItem5 = PathMenuItem(image: menuItemImage, highlightedImage: menuItemHighlitedImage, contentImage: starImage)
         
-        let items = [starMenuItem1, starMenuItem2, starMenuItem3, starMenuItem4, starMenuItem5]
+        let items = [starMenuItem1, starMenuItem2] //   , starMenuItem3, starMenuItem4, starMenuItem5]
         
         let startItem = PathMenuItem(image: UIImage(named: "bg-addbutton")!,
                           highlightedImage: UIImage(named: "bg-addbutton-highlighted"),
@@ -44,11 +44,12 @@ class ViewController: UIViewController {
         menu.startPoint     = CGPointMake(UIScreen.mainScreen().bounds.width/2, view.frame.size.height - 30.0)
         menu.menuWholeAngle = CGFloat(M_PI) - CGFloat(M_PI/5)
         menu.rotateAngle    = -CGFloat(M_PI_2) + CGFloat(M_PI/5) * 1/2
+        menu.menuStyle      = PathMenu.MenuStyle.Straight
         menu.timeOffset     = 0.0
-        menu.farRadius      = 110.0
-        menu.nearRadius     = 90.0
-        menu.endRadius      = 100.0
-        menu.animationDuration = 0.5
+        menu.farRadius      = 80.0
+        menu.nearRadius     = 60.0
+        menu.endRadius      = 70.0
+        menu.animationDuration = 0.3
         
         view.addSubview(menu)
         view.backgroundColor = UIColor(red:0.96, green:0.94, blue:0.92, alpha:1)

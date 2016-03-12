@@ -18,7 +18,10 @@ public protocol PathMenuDelegate: class {
 }
 
 public class PathMenu: UIView, PathMenuItemDelegate {
-    
+    public enum MenuStyle {
+        case Path
+        case Straight
+    }
     struct Radius {
         static var Near: CGFloat = 110.0
         static var End: CGFloat  = 120.0
@@ -114,6 +117,7 @@ public class PathMenu: UIView, PathMenuItemDelegate {
     public var farRadius: CGFloat!
     
     public var motionState: State?
+    public var menuStyle:MenuStyle = .Path
     
     public var startPoint: CGPoint = CGPointZero {
         didSet {
@@ -260,9 +264,20 @@ public class PathMenu: UIView, PathMenuItemDelegate {
 
         let path = CGPathCreateMutable()
         CGPathMoveToPoint(path, nil, CGFloat(item.startPoint!.x), CGFloat(item.startPoint!.y))
-        CGPathAddLineToPoint(path, nil, item.farPoint!.x, item.farPoint!.y)
-        CGPathAddLineToPoint(path, nil, item.nearPoint!.x, item.nearPoint!.y)
-        CGPathAddLineToPoint(path, nil, item.endPoint!.x, item.endPoint!.y)
+        switch (self.menuStyle) {
+        case .Straight:
+            CGPathAddLineToPoint(path, nil, item.farPoint!.x, item.farPoint!.y - (self.endRadius * CGFloat(flag!)))
+            CGPathAddLineToPoint(path, nil, item.nearPoint!.x, item.nearPoint!.y - (self.endRadius * CGFloat(flag!)))
+            CGPathAddLineToPoint(path, nil, item.endPoint!.x, item.endPoint!.y - (self.endRadius * CGFloat(flag!)))
+            item.center = CGPointMake(item.endPoint!.x, item.endPoint!.y - (self.endRadius * CGFloat(flag!)))
+            break
+        default:
+            CGPathAddLineToPoint(path, nil, item.farPoint!.x, item.farPoint!.y)
+            CGPathAddLineToPoint(path, nil, item.nearPoint!.x, item.nearPoint!.y)
+            CGPathAddLineToPoint(path, nil, item.endPoint!.x, item.endPoint!.y)
+            item.center = item.endPoint!
+            break
+        }
         positionAnimation.path = path
         
         let animationgroup: CAAnimationGroup = CAAnimationGroup()
@@ -277,7 +292,6 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         }
         
         item.layer.addAnimation(animationgroup, forKey: "Expand")
-        item.center = item.endPoint!
         
         flag!++
     }
@@ -300,9 +314,18 @@ public class PathMenu: UIView, PathMenuItemDelegate {
         let positionAnimation = CAKeyframeAnimation(keyPath: "position")
         positionAnimation.duration = CFTimeInterval(animationDuration!)
         let path: CGMutablePathRef = CGPathCreateMutable()
-        CGPathMoveToPoint(path, nil, item.endPoint!.x, item.endPoint!.y)
-        CGPathAddLineToPoint(path, nil, item.farPoint!.x, item.farPoint!.y)
-        CGPathAddLineToPoint(path, nil, CGFloat(item.startPoint!.x), CGFloat(item.startPoint!.y))
+        switch (self.menuStyle) {
+        case .Straight:
+            CGPathMoveToPoint(path, nil, item.endPoint!.x, item.endPoint!.y - (self.endRadius * CGFloat(flag!)))
+            CGPathAddLineToPoint(path, nil, item.farPoint!.x, item.farPoint!.y - (self.endRadius * CGFloat(flag!)))
+            CGPathAddLineToPoint(path, nil, CGFloat(item.startPoint!.x), CGFloat(item.startPoint!.y))
+            break
+        default:
+            CGPathMoveToPoint(path, nil, item.endPoint!.x, item.endPoint!.y)
+            CGPathAddLineToPoint(path, nil, item.farPoint!.x, item.farPoint!.y)
+            CGPathAddLineToPoint(path, nil, CGFloat(item.startPoint!.x), CGFloat(item.startPoint!.y))
+            break
+        }
         positionAnimation.path = path
         
         let animationgroup = CAAnimationGroup()
@@ -333,6 +356,11 @@ public class PathMenu: UIView, PathMenuItemDelegate {
             
             if menuWholeAngle >= CGFloat(M_PI) * 2 {
                 menuWholeAngle = menuWholeAngle! - menuWholeAngle! / CGFloat(count)
+            }
+            
+            if (self.menuStyle == .Straight) {
+                menuWholeAngle = 0
+                rotateAngle = 0
             }
             
             denominator = count == 1 ? 1 : count - 1
